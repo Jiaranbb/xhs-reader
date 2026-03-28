@@ -50,7 +50,14 @@ description: >
    c. 检测本 skill 的安装目录（即 `config.json` 所在目录），将 `scripts_path` 更新为该目录下 `scripts` 子目录的**绝对路径**
    d. 输出简要提示：「配置完成。如需视频逐字稿功能，请安装 faster-whisper 和 ffmpeg，详见 setup.md。」
 3. **若 `scripts_path` 是相对路径（以 `./` 开头）**，将其替换为绝对路径并写入 `config.json`
-4. 确保分类目录存在：执行命令 `mkdir -p "{obsidian_vault}/{save_root}/{素材,灵感,参考,学习资料,其他}"`
+4. 确保分类目录存在，逐条执行：
+   ```
+   mkdir -p "{obsidian_vault}/{save_root}/素材"
+   mkdir -p "{obsidian_vault}/{save_root}/灵感"
+   mkdir -p "{obsidian_vault}/{save_root}/参考"
+   mkdir -p "{obsidian_vault}/{save_root}/学习资料"
+   mkdir -p "{obsidian_vault}/{save_root}/其他"
+   ```
 5. 视频笔记时检查 ASR 依赖：执行命令 `python3 -c "import faster_whisper"` + `which ffmpeg`，缺失则在笔记中标注并跳过 ASR
 
 **检查点：** `obsidian_vault` 路径有效，`scripts_path` 为绝对路径，分类目录已创建。
@@ -145,6 +152,8 @@ description: >
 
 **检查点：** `TRANSCRIPT`（逐字稿文本），或失败原因标注。
 
+**严格规则：逐字稿必须原文保留 ASR 输出的每一行（含时间戳），禁止总结、改写、缩写或省略任何内容。**
+
 ### Gate 5: 热门评论（Top 10）
 
 - **如果 PLATFORM = XHS**：在浏览器中向下滚动 5-10 次到评论区 → **读取文件 `references/comments-js.md`** → 执行页面 JS → 按点赞排序取前 10 条
@@ -172,8 +181,25 @@ description: >
 ### Gate 7: 生成并保存
 
 1. **读取文件 `assets/note-template.md`** 获取模板
-2. 填入所有变量数据，**「原链接」字段必须用 `ORIGINAL_LINK`**（用户发的原始链接）
-3. 模板末尾的页脚（工具署名行）**必须保留，不可省略**
+2. **严格按模板结构填入数据**，不可省略任何区域，不可改变区域顺序。逐项说明：
+
+| 模板区域 | 数据来源 | 严格规则 |
+|---------|---------|---------|
+| frontmatter（`---` 之间） | Gate 2 + Gate 6 | 所有字段必须填写，`原链接` 必须用 `ORIGINAL_LINK` |
+| `## 正文内容` | Gate 2 的 `desc` | **原文粘贴，禁止总结改写** |
+| `## 图片文字内容` | Gate 3 的 `IMAGE_TEXT` | **原文粘贴，禁止总结改写**；图文笔记必须包含此区域 |
+| `## 视频逐字稿` | Gate 4 的 `TRANSCRIPT` | **原文粘贴 ASR 每一行（含时间戳），禁止总结改写**；仅视频笔记 |
+| `## 视频` | Gate 4 的视频 URL | 必须用以下**精确格式**：`<video src="完整URL含参数" controls></video>` |
+| `## 热门评论（Top 10）` | Gate 5 的 `COMMENTS` | 必须用 Markdown 表格格式，表头为 `# | 用户 | 评论内容 | 点赞` |
+| 页脚署名行 | 模板末尾 | **必须保留，不可省略** |
+
+3. **视频嵌入的精确写法**（不可使用其他格式）：
+   ```html
+   <video src="https://sns-video-xxx.xhscdn.com/xxx.mp4?sign=xxx&t=xxx" controls></video>
+   ```
+   - 必须是 `<video>` 标签，不是 `![]()`，不是 `[链接]()`
+   - 必须包含 `controls` 属性
+   - URL 必须保留完整的查询参数（`?sign=xxx&t=xxx`）
 
 **裁剪规则：**
 - 图文笔记（type="normal"）：去掉「封面图」「视频逐字稿」「视频」区域
@@ -189,7 +215,9 @@ description: >
 - 关键概念和结论加粗
 - 逐字稿每行紧挨，不加空行，不加说明文字，不用 `<details>` 折叠
 
-3. 写入文件到 `{obsidian_vault}/{save_root}/{CATEGORY}/{标题}.md`（文件名去特殊字符，限 50 字符）
+4. 写入文件到 `{obsidian_vault}/{save_root}/{CATEGORY}/{标题}.md`
+   - **`{CATEGORY}` 是 Gate 6 确定的分类名（素材/灵感/参考/学习资料/其他），必须保存到对应子目录，不可直接保存到 `{save_root}/` 根目录**
+   - 文件名：去除特殊字符，限 50 字符
 
 ### 完成确认
 

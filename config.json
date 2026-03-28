@@ -1,0 +1,9 @@
+{
+  "obsidian_vault": "",
+  "save_root": "00-Inbox/小红书",
+  "attachments_dir": "_attachments",
+  "categories": ["素材", "灵感", "参考", "学习资料", "其他"],
+  "default_category": "其他",
+  "asr_model": "small",
+  "scripts_path": "./scripts"
+}

@@ -1,0 +1,15 @@
+# Agent-specific local settings (may contain personal paths)
+.claude/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Temp files
+*.tmp
+*.swp

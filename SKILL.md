@@ -64,16 +64,19 @@ description: >
 
 ### Gate 1: 链接解析 + 平台识别
 
-1. 提取链接，**保存原始链接为 `ORIGINAL_LINK`**（写入笔记用）
+1. 从用户消息中提取链接，**立即保存为 `ORIGINAL_LINK`，后续不可修改此变量**
+   - `ORIGINAL_LINK` 就是用户发送的原始文本中的链接，例如 `http://xhslink.com/o/xxx` 或 `https://x.com/user/status/123`
+   - **严格规则：`ORIGINAL_LINK` 必须是用户发送的原始链接原文，不可替换为解析后的 xiaohongshu.com/explore/... 长链接。笔记中所有「原链接」字段都使用此值。**
 2. 识别平台：
    - 链接包含 `xhslink.com` 或 `xiaohongshu.com` → **PLATFORM = XHS**
    - 链接包含 `x.com` 或 `twitter.com` → **PLATFORM = Twitter**
 3. 如果是 XHS 短链接（xhslink.com），**必须用浏览器打开**（curl 返回 404，原因是 JS 重定向）：
    - 打开浏览器标签页 → 导航到短链接 URL → 等待 3 秒 → 读取最终 URL 作为 `NOTE_URL`
+   - **注意：`NOTE_URL` 仅用于数据提取，写入笔记时仍使用 `ORIGINAL_LINK`**
 4. 如果是 Twitter 链接，直接使用原链接作为 `NOTE_URL`
 5. 如果是完整 xiaohongshu.com 链接，直接使用
 
-**检查点：** `ORIGINAL_LINK`（原始链接）、`NOTE_URL`（解析后完整 URL）、`PLATFORM`（XHS 或 Twitter）。
+**检查点：** `ORIGINAL_LINK`（用户发送的原始链接，不可被覆盖）、`NOTE_URL`（用于数据提取的完整 URL）、`PLATFORM`（XHS 或 Twitter）。
 
 ### Gate 2: 数据提取
 

@@ -1,14 +1,14 @@
-# xhs-reader — AI Agent 小红书/Twitter 内容提取技能
+# xhs-reader — AI Agent 小红书内容提取技能
 
 发送一条链接，自动提取全部内容保存到本地。
 
 ```
-小红书/Twitter 链接 → 内容提取 → 自动分类 → Markdown 笔记
+小红书链接 → 内容提取 → 自动分类 → Markdown 笔记
 ```
 
 ## 它能干什么
 
-发送一条小红书或 Twitter 链接，自动提取全部内容，整理为 Markdown 笔记并分类保存。
+发送一条小红书链接，自动提取内容，整理为 Markdown 笔记并分类保存。
 
 ### 小红书图文笔记
 
@@ -29,21 +29,28 @@
 | 视频预览 | 默认在笔记中插入视频链接，可在 Obsidian 直接播放 |
 | 视频下载 | 可事后说「下载视频」保存到本地永久观看 |
 
-### Twitter/X
-
-| 步骤 | 说明 |
-|------|------|
-| 推文提取 | 完整文本、作者、图片 |
-| 视频处理 | 提取视频逐字稿，默认插入视频链接，可选下载 |
-
 ### 通用能力
 
 | 功能 | 说明 |
 |------|------|
-| 自动分类 | 根据内容关键词归入 素材 / 灵感 / 参考 / 学习资料 / 其他 |
-| 自动标签 | 保留原笔记标签，自动添加来源标签（#小红书 / #Twitter） |
+| 自动分类 | 根据内容归入创作素材或知识资源 |
+| 自动标签 | 保留原笔记标签，自动添加小红书来源标签 |
 
-> **其他内容源？** YouTube 视频和播客的逐字稿提取推荐使用 [podcast-transcript-txt-skill](https://github.com/KingJing1/podcast-transcript-txt-skill)。
+> **需要同时支持小红书、Twitter/X、YouTube、B 站？** 推荐使用组合入口 [content-reader](https://github.com/Jiaranbb/content-reader)，它会按链接类型路由到对应平台 skill。
+
+---
+
+## 登录与账号安全
+
+xhs-reader 默认不使用小红书登录账号。
+
+运行时会先打开小红书网页并检查登录状态：
+
+- 如果检测到已登录账号，会停止提取，并提示你退出登录或切换到未登录的隔离浏览器。
+- 如果只是弹出手机号、二维码或验证码登录窗，会默认关闭弹窗后继续。
+- 不会导出或保存 cookie、token、localStorage 等登录信息。
+
+未登录状态下，部分评论、互动数、视频源或图片源可能不完整；这是平台限制，skill 会尽量保存可见内容。
 
 ---
 
@@ -101,7 +108,7 @@ brew install ffmpeg          # macOS
 ```
 http://xhslink.com/o/xxxxx          → 自动提取并保存
 保存小红书 http://xhslink.com/...    → 同上
-https://x.com/user/status/123456    → 提取 Twitter 内容
+保存一下，需要原视频 http://xhslink.com/... → 保存笔记并下载原视频
 ```
 
 保存后还可以追加操作：

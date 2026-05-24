@@ -83,21 +83,34 @@ clawhub install xhs-reader
 
 ## 依赖说明
 
-| 能力 | 依赖 | 说明 |
-|------|------|------|
-| 图片文字识别 | LLM 视觉能力 | 依赖大模型本身的多模态能力，无需额外安装 |
-| 视频逐字稿 | `faster-whisper` + `ffmpeg` | 本地 ASR 语音识别，需手动安装 |
-| 数据提取 | Python 3.9+ | 运行提取脚本 |
+推荐安装：
 
-视频逐字稿依赖安装：
+```bash
+# macOS
+brew install yt-dlp ffmpeg
+
+# Windows
+winget install yt-dlp
+
+# Linux / 通用 Python 环境
+pipx install yt-dlp
+```
+
+可选安装：
 
 ```bash
 pip install faster-whisper
-brew install ffmpeg          # macOS
-# sudo apt install ffmpeg    # Linux
 ```
 
-不装也能正常使用，只是视频笔记不会有逐字稿。
+| 能力 | 依赖 | 说明 |
+|------|------|------|
+| 图片文字识别 | LLM 视觉能力 | 依赖大模型本身的多模态能力，无需额外安装 |
+| 元数据 / 媒体下载 | `yt-dlp` | 推荐安装，用于提取元数据和下载图片、视频 |
+| 视频处理 | `ffmpeg` | 下载、转音频、本地 ASR 时使用 |
+| 本地转写 | `faster-whisper` | 没有可用字幕且需要逐字稿时才需要 |
+| 数据提取 | Python 3.9+ | 运行提取脚本 |
+
+不安装 `ffmpeg` / `faster-whisper` 也可以正常保存普通图文笔记；只是在没有可用字幕时不能做本地 ASR 兜底。不安装 `yt-dlp` 会影响媒体下载和部分元数据提取。
 
 ---
 

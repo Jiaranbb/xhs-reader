@@ -170,6 +170,6 @@ xhs-reader/
 嘉然 Jiaran
 
 - 公众号：嘉然学习笔记
-- GitHub：[Jiaranbb/xhs-reader](https://github.com/Jiaranbb/xhs-reader)
+- GitHub 链接：[github.com/Jiaranbb/xhs-reader](https://github.com/Jiaranbb/xhs-reader)
 
 如果觉得有用，欢迎 Star 和关注交流。

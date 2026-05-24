@@ -1,8 +1,10 @@
 # Gate 2: 数据提取 JavaScript
 
+使用本文件前必须先执行 `references/account-safety.md` 的账号安全门禁。检测到小红书登录态时停止，不执行下面的提取脚本。
+
 ## 提取笔记基础数据（不含 URL）
 
-用于 Chrome `javascript_tool`，提取标题、正文、标签、互动数据等非敏感字段：
+用于任意支持页面 JavaScript / DOM evaluate 的 agent，提取标题、正文、标签、互动数据等非敏感字段：
 
 ```javascript
 (() => {
@@ -29,7 +31,7 @@
 
 ## 提取媒体 URL（去查询参数）
 
-图片和视频 URL 可能包含 token 导致 `javascript_tool` 被安全过滤拦截。先提取去参数版本：
+图片和视频 URL 可能包含签名参数，部分 agent 会拦截直接返回完整 URL。先提取去参数版本：
 
 ```javascript
 (() => {

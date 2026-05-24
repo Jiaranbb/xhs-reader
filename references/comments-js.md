@@ -1,8 +1,10 @@
 # Gate 5: 评论提取 JavaScript
 
+使用本文件前必须先执行 `references/account-safety.md` 的账号安全门禁。检测到小红书登录态时停止，不执行下面的评论提取脚本。
+
 ## 提取热门评论（Top 10）
 
-用于 Chrome `javascript_tool`，从页面 DOM 提取一级评论并按点赞排序：
+用于任意支持页面 JavaScript / DOM evaluate 的 agent，从页面 DOM 提取一级评论并按点赞排序：
 
 ```javascript
 (() => {

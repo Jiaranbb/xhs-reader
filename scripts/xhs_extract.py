@@ -3,6 +3,9 @@
 xhs_extract.py - 小红书笔记数据提取 & 视频 ASR 转录
 
 用法:
+  # 首次初始化配置和保存目录
+  python3 xhs_extract.py --init --vault "/path/to/your/vault"
+
   # 提取笔记数据（返回 JSON）
   python3 xhs_extract.py --url "https://www.xiaohongshu.com/explore/xxx" --action extract
 
@@ -33,9 +36,69 @@ UA = (
 
 DEFAULT_ASR_MODEL = os.getenv("XHS_ASR_MODEL", "small").strip() or "small"
 DEFAULT_MODEL_ROOT = Path(
-    os.getenv("XHS_ASR_MODEL_ROOT", str(Path.home() / ".codex/models/faster-whisper"))
+    os.getenv("XHS_ASR_MODEL_ROOT", str(Path.home() / ".cache/faster-whisper"))
 ).expanduser()
 SUPPORTED_ASR_MODELS = ("small", "medium")
+SKILL_DIR = Path(__file__).resolve().parents[1]
+DEFAULT_CONFIG_PATH = SKILL_DIR / "config.json"
+
+
+# ---------------------------------------------------------------------------
+# First-run initialization
+# ---------------------------------------------------------------------------
+
+def _load_config(config_path: Path) -> Dict[str, Any]:
+    if config_path.exists():
+        try:
+            return json.loads(config_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid config JSON: {config_path}") from e
+    return {
+        "obsidian_vault": "",
+        "save_root": "00-Inbox/小红书",
+        "attachments_dir": "_attachments",
+        "categories": ["多媒体", "创作素材", "知识资源"],
+        "default_category": "知识资源",
+        "asr_model": DEFAULT_ASR_MODEL,
+        "scripts_path": "scripts",
+    }
+
+
+def init_config(vault: str, config_path: Path = DEFAULT_CONFIG_PATH) -> Dict[str, Any]:
+    """Initialize config.json and create the default save directories."""
+    vault_path = Path(vault).expanduser()
+    if not vault_path.is_absolute():
+        vault_path = (Path.cwd() / vault_path).resolve()
+    else:
+        vault_path = vault_path.resolve()
+
+    config = _load_config(config_path)
+    config["obsidian_vault"] = str(vault_path)
+    config["scripts_path"] = str((SKILL_DIR / "scripts").resolve())
+    config.setdefault("save_root", "00-Inbox/小红书")
+    config.setdefault("attachments_dir", "_attachments")
+    config.setdefault("categories", ["多媒体", "创作素材", "知识资源"])
+    config.setdefault("default_category", "知识资源")
+    config.setdefault("asr_model", DEFAULT_ASR_MODEL)
+
+    save_root = vault_path / config["save_root"]
+    created_dirs = []
+    for category in config["categories"]:
+        target = save_root / category
+        target.mkdir(parents=True, exist_ok=True)
+        created_dirs.append(str(target))
+
+    config_path.write_text(
+        json.dumps(config, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    return {
+        "config_path": str(config_path),
+        "obsidian_vault": str(vault_path),
+        "save_root": str(save_root),
+        "created_dirs": created_dirs,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -230,7 +293,8 @@ def extract_note(url: str) -> Dict[str, Any]:
     if not state:
         raise ValueError(
             "Failed to extract __INITIAL_STATE__ from page. "
-            "Anti-scraping may be active. Try Chrome fallback."
+            "Anti-scraping may be active. Browser fallback requires the account safety gate "
+            "and must not use a logged-in Xiaohongshu account."
         )
     result = parse_note_from_state(state)
     result["url"] = normalized
@@ -363,7 +427,9 @@ def transcribe_video(video_url: str, asr_model: str = "small") -> Dict[str, Any]
             try:
                 extract_audio(local_path, audio_path)
             except (subprocess.CalledProcessError, FileNotFoundError) as e:
-                raise RuntimeError(f"ffmpeg failed: {e}. Install: brew install ffmpeg") from e
+                raise RuntimeError(
+                    f"ffmpeg failed: {e}. Install ffmpeg for local ASR fallback."
+                ) from e
             lines, meta = run_local_asr(audio_path, asr_model)
         return {"transcript": "\n".join(lines), "meta": meta}
 
@@ -379,7 +445,7 @@ def transcribe_video(video_url: str, asr_model: str = "small") -> Dict[str, Any]
             extract_audio(video_path, audio_path)
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             raise RuntimeError(
-                f"ffmpeg failed: {e}. Install: brew install ffmpeg"
+                f"ffmpeg failed: {e}. Install ffmpeg for local ASR fallback."
             ) from e
 
         lines, meta = run_local_asr(audio_path, asr_model)
@@ -397,6 +463,7 @@ def transcribe_video(video_url: str, asr_model: str = "small") -> Dict[str, Any]
 def doctor() -> int:
     """Check dependencies."""
     ok = True
+    asr_available = True
 
     # Python version
     print(f"Python: {sys.version}")
@@ -410,28 +477,52 @@ def doctor() -> int:
         print("curl: MISSING")
         ok = False
 
+    # yt-dlp
+    yt_dlp_path = shutil.which("yt-dlp")
+    if yt_dlp_path:
+        try:
+            result = subprocess.run(
+                [yt_dlp_path, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=5,
+            )
+            version = result.stdout.strip() or "unknown version"
+            print(f"yt-dlp: OK ({version})")
+        except Exception:
+            print("yt-dlp: OK")
+    else:
+        print(
+            "yt-dlp: MISSING (Windows: winget install yt-dlp; "
+            "macOS: brew install yt-dlp; Linux/Python: pipx install yt-dlp)"
+        )
+        ok = False
+
     # ffmpeg
     if shutil.which("ffmpeg"):
-        print("ffmpeg: OK")
+        print("ffmpeg: OK (optional; needed for local ASR fallback)")
     else:
-        print("ffmpeg: MISSING (brew install ffmpeg)")
-        ok = False
+        print("ffmpeg: OPTIONAL MISSING (needed only for local ASR fallback)")
+        asr_available = False
 
     # faster-whisper
     try:
         import faster_whisper
-        print(f"faster-whisper: OK ({faster_whisper.__version__})")
+        print(f"faster-whisper: OK ({faster_whisper.__version__}) (optional; needed for local ASR fallback)")
     except ImportError:
-        print("faster-whisper: MISSING (pip install faster-whisper)")
-        ok = False
+        print("faster-whisper: OPTIONAL MISSING (needed only for local ASR fallback)")
+        asr_available = False
 
     # Model cache
-    for model_name in SUPPORTED_ASR_MODELS:
-        cache = DEFAULT_MODEL_ROOT / model_name
-        if cache.exists() and any(cache.iterdir()):
-            print(f"ASR model '{model_name}': cached at {cache}")
-        else:
-            print(f"ASR model '{model_name}': not cached (will download on first use)")
+    if asr_available:
+        for model_name in SUPPORTED_ASR_MODELS:
+            cache = DEFAULT_MODEL_ROOT / model_name
+            if cache.exists() and any(cache.iterdir()):
+                print(f"ASR model '{model_name}': cached at {cache}")
+            else:
+                print(f"ASR model '{model_name}': not cached (will download on first ASR fallback use)")
+    else:
+        print("ASR fallback: unavailable until ffmpeg and faster-whisper are installed")
 
     return 0 if ok else 1
 
@@ -466,7 +557,7 @@ def parse_vtt(vtt_path: Path) -> List[Dict]:
         # Collect text lines after timestamp, extract text from VTT tags
         text_lines = lines[ts_line + 1:]
         raw_text = " ".join(text_lines)
-        # Handle Twitter X-word-ms tags: extract text content between > and </
+        # Handle platform-specific word timing tags: extract text content between > and </.
         xword_match = re.search(r"<X-word-ms[^>]*>(.+?)</X-word-ms>", raw_text)
         if xword_match:
             clean_text = xword_match.group(1).strip()
@@ -498,6 +589,13 @@ def _vtt_ts_to_seconds(ts: str) -> float:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Xiaohongshu note extractor & video ASR")
     parser.add_argument("--url", help="Xiaohongshu note URL or share text")
+    parser.add_argument("--init", action="store_true", help="Initialize config and save directories")
+    parser.add_argument("--vault", help="Vault or local save directory for --init")
+    parser.add_argument(
+        "--config",
+        default=str(DEFAULT_CONFIG_PATH),
+        help=f"Config path for --init (default: {DEFAULT_CONFIG_PATH})"
+    )
     parser.add_argument(
         "--action",
         choices=("extract", "transcribe", "resolve"),
@@ -515,6 +613,13 @@ def main() -> int:
 
     if args.doctor:
         return doctor()
+
+    if args.init:
+        if not args.vault:
+            parser.error("--vault is required with --init")
+        result = init_config(args.vault, Path(args.config).expanduser())
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
 
     if not args.url:
         parser.error("--url is required")

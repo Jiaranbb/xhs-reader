@@ -167,9 +167,9 @@ xhs-reader/
 
 ## 关于作者
 
-**嘉然** — AI 效率工具爱好者
+嘉然 Jiaran
 
-- 公众号：**嘉然学习笔记**
-- GitHub：https://github.com/Jiaranbb/xhs-reader
+- 公众号：嘉然学习笔记
+- GitHub：[Jiaranbb/xhs-reader](https://github.com/Jiaranbb/xhs-reader)
 
-如果觉得有用，欢迎 Star 和关注交流～
+如果觉得有用，欢迎 Star 和关注交流。

@@ -54,3 +54,15 @@
 很多小红书图文笔记的 `desc`（正文）是图片内容的摘要或完全复制。如果同时保留，笔记会非常冗余。
 
 **解决：** 去重方向是精简正文（可标注「详细内容见下方图片文字」），始终保持图片文字的完整性。
+
+## 9. 图文笔记的 yt-dlp 报 No video formats found
+
+图文笔记没有视频格式，`yt-dlp --dump-single-json` 或直接下载时可能报 `No video formats found`。这不代表笔记不可访问。
+
+**解决：** 继续降级到 `scripts/xhs_extract.py --action extract` 或已通过账号安全门禁的页面 JS，提取 `images` 列表后用 `curl` 下载图片。只有用户明确要视频时，才把该错误解释为「当前笔记没有可下载视频」。
+
+## 10. comments 字段可能不是列表
+
+部分页面的 `noteDetailMap.comments` 会返回对象，例如 `{"list": [], "cursor": "", "hasMore": true}`，而不是评论数组。旧解析器如果直接遍历这个对象，会把 `"list"` 这类 key 当成评论对象导致崩溃。
+
+**解决：** 解析评论前先标准化结构：支持直接数组，也支持对象里的 `list` / `comments` / `items` 数组；没有可见评论时返回空列表，不影响正文、图片和互动数据保存。

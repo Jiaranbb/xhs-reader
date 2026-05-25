@@ -29,6 +29,7 @@ yt-dlp -o "%(title)s.%(ext)s" "$YTDLP_URL"
 ```
 
 7. `yt-dlp` 失败时，在已通过账号安全门禁的页面使用 `references/extract-js.md` 获取媒体 URL，再用 `curl` 下载。
+   - 如果 `yt-dlp` 报 `No video formats found`，通常说明当前笔记是图文笔记或没有可下载视频。用户要下载图片时，不要终止；继续用脚本或页面 JS 提取 `images`，再逐张下载。
 
 ## 保存笔记
 
@@ -46,6 +47,7 @@ yt-dlp --dump-single-json --skip-download "$YTDLP_URL" 2>/dev/null
 5. `yt-dlp` 失败时降级：
    - Path A：`python3 {scripts_path}/xhs_extract.py --url "$YTDLP_URL" --action extract`
    - Path B：读取 `references/extract-js.md`，在已通过账号安全门禁的页面提取数据
+   - 如果 `yt-dlp` 报 `No video formats found`，不要直接判定失败；这常见于图文笔记，继续走 Path A / Path B。
 
 笔记里的链接字段始终使用用户发送的 `ORIGINAL_LINK`。
 

@@ -248,16 +248,18 @@ def parse_note_from_state(state: Dict) -> Dict[str, Any]:
     # Comments (may or may not be present)
     comments = []
     comment_data = state.get("comment", {}) or {}
-    comment_list = comment_data.get("comments", []) or []
+    comment_list = _normalize_comment_list(comment_data.get("comments", []))
     if not comment_list:
         # Try alternative paths
         for key in note_map:
-            c = note_map[key].get("comments", [])
+            c = _normalize_comment_list(note_map[key].get("comments", []))
             if c:
                 comment_list = c
                 break
 
     for c in comment_list:
+        if not isinstance(c, dict):
+            continue
         comments.append({
             "user": c.get("userInfo", {}).get("nickname", "") or c.get("user", {}).get("nickname", ""),
             "content": c.get("content", ""),
@@ -283,6 +285,18 @@ def parse_note_from_state(state: Dict) -> Dict[str, Any]:
         "commentCount": str(interact.get("commentCount", "0")),
         "comments": comments,
     }
+
+
+def _normalize_comment_list(raw: Any) -> List[Dict[str, Any]]:
+    """Return a comment list from Xiaohongshu's varying comment shapes."""
+    if isinstance(raw, list):
+        return [item for item in raw if isinstance(item, dict)]
+    if isinstance(raw, dict):
+        for key in ("list", "comments", "items"):
+            value = raw.get(key)
+            if isinstance(value, list):
+                return [item for item in value if isinstance(item, dict)]
+    return []
 
 
 def extract_note(url: str) -> Dict[str, Any]:

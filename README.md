@@ -172,17 +172,31 @@ xhs-reader/
 
 本项目仅供个人学习和研究使用。请尊重小红书平台的内容版权及用户隐私，不得将本工具用于批量爬取、商业用途或任何违反平台服务条款的行为。使用者应自行承担使用风险。
 
-## 许可
+## 相关项目
 
-[CC BY-NC 4.0](LICENSE) — 可自由使用和修改，需署名，禁止商业用途。
+- [ecommerce-helper](https://github.com/Jiaranbb/ecommerce-helper) — 从新品研究、人民币定价到商详与社媒内容的完整电商素材包 Skill；
+- [report-helper](https://github.com/Jiaranbb/report-helper) — 一句话启动长篇深度研究，并生成带来源的报告与 PDF；
+- [content-reader](https://github.com/Jiaranbb/content-reader) — 保存小红书、Twitter／X、YouTube 和 B 站内容的组合型 Agent Skills；
+- [pdf-reader](https://github.com/Jiaranbb/pdf-reader) — 将 PDF 转换成带页码与质量指标的 Markdown；
+- [dreamy-photo](https://github.com/Jiaranbb/dreamy-photo) — 保留真实主体细节的梦幻化照片编辑 Skill；
+- [autoskin-codex](https://github.com/Jiaranbb/autoskin-codex) — 可预览、可撤销的 Codex 桌面主题定制工具；
+- [jiucai-helper](https://github.com/Jiaranbb/jiucai-helper) — 将投资方法和纪律整理成可验证的个人投资决策 Skill。
 
----
+更多原创项目见 [Jiaranbb 的 GitHub 主页](https://github.com/Jiaranbb?tab=repositories)。
 
 ## 关于作者
 
-嘉然 Jiaran
+**嘉然 Jiaran（Jiaranbb）** — 独立开发者／AI Builder
 
-- 公众号：嘉然学习笔记
-- GitHub 链接：[github.com/Jiaranbb/xhs-reader](https://github.com/Jiaranbb/xhs-reader)
+持续把自己真正需要的工作流做成可复用的 AI 工具与 Skills。
 
-如果觉得有用，欢迎 Star 和关注交流。
+- 个人网站：[c.aoao.ai](https://c.aoao.ai)
+- GitHub：[github.com/Jiaranbb](https://github.com/Jiaranbb)
+- X／Twitter：[@_jiaran](https://x.com/_jiaran)
+- 微信：`evadebot`
+- 公众号：**嘉然学习笔记**
+- 项目问题：[GitHub Issues](https://github.com/Jiaranbb/xhs-reader/issues)
+
+## License
+
+[CC BY-NC 4.0](LICENSE) — 可自由使用和修改，需署名，禁止商业用途。
